@@ -7,59 +7,60 @@ use Illuminate\Http\Request;
 
 class AttendanceController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function checkIn(Request $request)
     {
-        //
+        $request->validate([
+            'latitude' => 'required|numeric',
+            'longitude' => 'required|numeric',
+        ]);
+
+        $alreadyCheckedIn = Attendance::where('user_id', $request->user()->id)
+            ->whereDate('check_in', now()->toDateString())
+            ->exists();
+
+
+        if ($alreadyCheckedIn) {
+            return response()->json(['message' => 'Already checked in today'], 400);
+        }
+
+        $attendance = Attendance::create([
+            'user_id' => $request->user()->id,
+            'check_in' => now(),
+            'latitude' => $request->latitude,
+            'longitude' => $request->longitude,
+        ]);
+
+        return response()->json(['message' => 'Checked in successfully', 'date' => $attendance], 200);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function checkOut(Request $request)
     {
-        //
+        $request->validate([
+            'latitude' => 'required|numeric',
+            'longitude' => 'required|numeric',
+        ]);
+
+        $attendance = Attendance::where('user_id', $request->user()->id)
+            ->whereDate('check_in', now()->toDateString())
+            ->whereNull('check_out')
+            ->first();
+
+        if (!$attendance) {
+            return response()->json(['message' => 'Not checked in or already checked out'], 400);
+        }
+
+        $attendance->update([
+            'check_out' => now(),
+        ]);
+
+        return response()->json(['message' => 'Checked out successfully', 'date' => $attendance], 200);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    public function history(Request $request)
     {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(Attendance $attendance)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Attendance $attendance)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Attendance $attendance)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Attendance $attendance)
-    {
-        //
+        $history = Attendance::where('user_id', auth()->id())
+            ->orderBy('check_in', 'desc')
+            ->get();
+        return response()->json($history, 200);
     }
 }
