@@ -112,7 +112,7 @@ class AttendanceController extends Controller
     public function adminDashboard(Request $request)
     {
         $request->validate([
-            'user_id' => 'nullable|exists:users, id',
+            'user_id' => 'nullable|exists:users,id',
             'start_date' => 'nullable|date',
             'end_date' => 'nullable|date|after_or_equal:start_date',
         ]);
