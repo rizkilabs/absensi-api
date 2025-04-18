@@ -30,8 +30,8 @@ class AttendanceExport implements FromCollection, WithHeadings
 
         if($this->request->has('start_date') && $this->request->has('end_date')) {
             $query->whereBetween('check_in', [
-                $this->request->input('start_date'),
-                $this->request->input('end_date')
+                $this->request->start_date . ' 00:00:00',
+                $this->request->end_date . ' 23:59:59'
             ]);
         }
 
@@ -42,7 +42,7 @@ class AttendanceExport implements FromCollection, WithHeadings
                 'Check In' => $item->check_in,
                 'Check Out' => $item->check_out,
                 'Latitude' => $item->latitude,
-                'Longtitude' => $item->longtitude,
+                'Longtitude' => $item->longitude,
             ];
         });
     }
