@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Attendance;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 const OFFICE_LAT = -6.210656810621744;
 const OFFICE_LNG = 106.81294239422382;
@@ -96,16 +97,32 @@ class AttendanceController extends Controller
 
     public function history(Request $request)
     {
-        $history = Attendance::where('user_id', auth()->id)
-            ->orderBy('check_in', 'desc')
-            ->get();
-        return response()->json($history, 200);
+        $user = Auth::user();
+        // $history = Attendance::where('user_id', auth()->id)
+        //     ->orderBy('check_in', 'desc')
+        //     ->get();
+
+        if($user) {
+            $userId = $user->id;
+            $history = Attendance::where('user_id', $userId)->get();
+        }
+        return response()->json(['history' => $history], 200);
     }
 
-    public function adminDashboard()
+    public function adminDashboard(Request $request)
     {
-        $data = Attendance::with('user')->orderBy('check_in', 'desc')->get();
+        $query = Attendance::with('user')->orderBy('check_in', 'desc');
 
-        return response()->json($data);
+        if($request->has('user_id')) {
+            $query->where('user_id', $request->user_id);
+        };
+
+        if($request->has('start_date') && $request->has('end_date')) {
+            $query->whereBetween('check_in', [$request->start_date . ' 00:00:00', $request->end_date . ' 23:59:59']);
+        }
+
+        // $data = Attendance::with('user')->orderBy('check_in', 'desc')->get();
+
+        return response()->json($query->get());
     }
 }
