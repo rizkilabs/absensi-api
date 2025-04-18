@@ -101,4 +101,11 @@ class AttendanceController extends Controller
             ->get();
         return response()->json($history, 200);
     }
+
+    public function adminDashboard()
+    {
+        $data = Attendance::with('user')->orderBy('check_in', 'desc')->get();
+
+        return response()->json($data);
+    }
 }

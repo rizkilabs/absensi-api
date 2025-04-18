@@ -25,10 +25,10 @@ class AuthController extends Controller
         ]);
 
         $token = $user->createToken('auth_token')->plainTextToken;
-        return response()->json([
-            'user' => $user,
-            'token' => $token,
-        ], 201);
+        // return response()->json([
+        //     'user' => $user,
+        //     'token' => $token,
+        // ], 201);
 
         return response()->json(['message' => 'User registered successfully'], 201);
     }
@@ -42,8 +42,9 @@ class AuthController extends Controller
 
         if (Auth::attempt($request->only('email', 'password'))) {
             $user = User::where('email', $request->email)->first();
+            // dd($user);
+            // $user = Auth::user();
             $token = $user->createToken('auth_token')->plainTextToken;
-            
 
             return response()->json([
                 'user' => $user,

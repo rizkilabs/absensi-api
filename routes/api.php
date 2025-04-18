@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AttendanceController;
+use App\Models\Attendance;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -18,4 +19,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/history', [AttendanceController::class, 'history']);
 });
 
-
+Route::middleware(['auth:sanctum', 'is_admin'])->group(function () {
+    Route::get('/admin/attendances', [AttendanceController::class, 'adminDashboard']);
+});
